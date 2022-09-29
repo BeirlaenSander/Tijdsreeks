@@ -18,26 +18,32 @@ namespace MCT.Functions
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "days")] HttpRequest req,
             ILogger log)
         {
+            try
+            {
             List<string> days = new List<string>();
             string connectionString = Environment.GetEnvironmentVariable("ConnectionString");
-
-            using(SqlConnection connection = new SqlConnection(connectionString))
-            {
-                await connection.OpenAsync();
-                using(SqlCommand command = new SqlCommand())
+                using(SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    command.Connection = connection;
-                    string sql = "SELECT DISTINCT DagVanDeWeek FROM Bezoekers";
-                    command.CommandText = sql;
-
-                    SqlDataReader reader = await command.ExecuteReaderAsync();
-                    while (reader.Read())
+                    await connection.OpenAsync();
+                    using(SqlCommand command = new SqlCommand())
                     {
-                        days.Add(reader["DagVanDeWeek"].ToString());
+                        command.Connection = connection;
+                        string sql = "SELECT DISTINCT DagVanDeWeek FROM Bezoekers";
+                        command.CommandText = sql;
+
+                        SqlDataReader reader = await command.ExecuteReaderAsync();
+                        while (reader.Read())
+                        {
+                            days.Add(reader["DagVanDeWeek"].ToString());
+                        }
                     }
                 }
+                return new OkObjectResult(days);
             }
-            return new OkObjectResult(days);
+            catch (System.Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }
